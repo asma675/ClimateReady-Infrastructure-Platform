@@ -174,6 +174,56 @@ MIT License
 
 ---
 
+Here’s a **clean, professional “Usage & Attribution” section** you can paste directly into your README.
+It’s written to protect you **without scaring off recruiters, government reviewers, or engineers**.
+
+---
+
+## 📌 Usage & Attribution
+
+This project is shared publicly for **educational, research, and demonstration purposes**.
+
+### ✅ Permitted Use
+
+* Viewing and reviewing the source code
+* Running the project locally for learning or evaluation
+* Referencing architectural patterns or implementation approaches
+* Citing the project in academic or professional contexts
+
+### ❌ Restricted Use
+
+* Reproducing the project as-is for commercial products
+* Redistributing substantial portions of the code without attribution
+* Presenting this project or its derivatives as original work
+
+### 🏷️ Attribution Requirement
+
+If you reference, adapt, or build upon this project, please include clear attribution:
+
+> **ClimateReady** by **Asma Ahmed**
+> [https://github.com/your-username/ClimateReady](https://github.com/your-username/ClimateReady)
+
+### 📊 Data & Content Disclaimer
+
+All datasets included in this repository are **sample or demonstration data** unless otherwise stated.
+They do not represent official government data and should not be used for operational decision-making.
+
+### 🧠 Intellectual Property Notice
+
+The source code, documentation, and original design elements remain the intellectual property of the author.
+Project name, branding, and visual identity may not be reused without permission.
+
+---
+
+### ✨ Why this works
+
+* Sounds **professional**, not defensive
+* Acceptable to **IBM / Google / Government** reviewers
+* Clarifies intent without legal overreach
+* Complements an MIT or Apache license perfectly
+
+---
+
 ## 🌱 Why ClimateReady?
 
 ClimateReady is designed to bridge the gap between **climate science, infrastructure data, and actionable decision-making** — empowering organizations to prepare for climate impacts **before emergencies occur**.
