@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ const RISK_COLORS = {
   high: '#E63946'
 };
 
-const getRiskLevel = (score) => {
+const getRiskLevel = (score = 0) => {
   if (score < 30) return 'low';
   if (score < 60) return 'medium';
   return 'high';
@@ -30,31 +30,59 @@ const ASSET_ICONS = {
   dam: '🏗️'
 };
 
-function MapBounds({ assets }) {
-  const map = useMap();
-  
-  React.useEffect(() => {
-    if (assets.length > 0) {
-      const bounds = assets
-        .filter(a => a.location?.lat && a.location?.lng)
-        .map(a => [a.location.lat, a.location.lng]);
-      
-      if (bounds.length > 0) {
-        map.fitBounds(bounds, { padding: [50, 50] });
-      }
-    }
-  }, [assets, map]);
-  
+// ✅ Normalize coordinates across possible asset shapes
+function getCoords(asset) {
+  const lat =
+    asset?.location?.lat ??
+    asset?.location?.latitude ??
+    asset?.lat ??
+    asset?.latitude;
+
+  const lng =
+    asset?.location?.lng ??
+    asset?.location?.lon ??
+    asset?.location?.longitude ??
+    asset?.lng ??
+    asset?.lon ??
+    asset?.longitude;
+
+  // Ensure numbers
+  const latNum = typeof lat === 'string' ? parseFloat(lat) : lat;
+  const lngNum = typeof lng === 'string' ? parseFloat(lng) : lng;
+
+  if (Number.isFinite(latNum) && Number.isFinite(lngNum)) {
+    return { lat: latNum, lng: lngNum };
+  }
   return null;
 }
 
-export default function RiskMapView({ assets, onAssetSelect, selectedRisk = 'all' }) {
+function MapBounds({ assets }) {
+  const map = useMap();
+
+  React.useEffect(() => {
+    const points = assets
+      .map(a => getCoords(a))
+      .filter(Boolean)
+      .map(c => [c.lat, c.lng]);
+
+    if (points.length > 0) {
+      map.fitBounds(points, { padding: [50, 50] });
+    }
+  }, [assets, map]);
+
+  return null;
+}
+
+export default function RiskMapView({ assets = [], onAssetSelect, selectedRisk = 'all' }) {
   const filteredAssets = assets.filter(a => {
-    if (!a.location?.lat || !a.location?.lng) return false;
+    const coords = getCoords(a);
+    if (!coords) return false;
+
     if (selectedRisk === 'all') return true;
-    
-    const riskValue = a.climate_risks?.[`${selectedRisk}_risk`] || 0;
-    return riskValue > 30;
+
+    // ✅ Align with RiskMap.jsx filtering (show if risk > 0)
+    const riskValue = a.climate_risks?.[`${selectedRisk}_risk`] ?? 0;
+    return Number(riskValue) > 0;
   });
 
   const defaultCenter = [56.1304, -106.3468]; // Canada center
@@ -71,16 +99,20 @@ export default function RiskMapView({ assets, onAssetSelect, selectedRisk = 'all
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
         <MapBounds assets={filteredAssets} />
-        
+
         {filteredAssets.map((asset) => {
-          const riskScore = asset.overall_risk_score || 0;
+          const coords = getCoords(asset);
+          if (!coords) return null;
+
+          const riskScore = Number(asset.overall_risk_score ?? 0);
           const riskLevel = getRiskLevel(riskScore);
-          
+
           return (
             <CircleMarker
               key={asset.id}
-              center={[asset.location.lat, asset.location.lng]}
+              center={[coords.lat, coords.lng]}
               radius={8 + (riskScore / 20)}
               fillColor={RISK_COLORS[riskLevel]}
               color="#fff"
@@ -94,11 +126,15 @@ export default function RiskMapView({ assets, onAssetSelect, selectedRisk = 'all
               <Popup>
                 <div className="min-w-48">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xl">{ASSET_ICONS[asset.asset_type]}</span>
+                    <span className="text-xl">{ASSET_ICONS[asset.asset_type] ?? '🏛️'}</span>
                     <h3 className="font-semibold text-slate-900">{asset.name}</h3>
                   </div>
+
                   <div className="space-y-1 text-sm">
-                    <p className="text-slate-600">{asset.location?.municipality}, {asset.location?.province}</p>
+                    <p className="text-slate-600">
+                      {asset.location?.municipality ?? asset.city ?? asset.location?.city ?? ''}{asset.province || asset.location?.province ? ',' : ''} {asset.province ?? asset.location?.province ?? ''}
+                    </p>
+
                     <div className="flex items-center gap-2">
                       <span className="text-slate-500">Risk Score:</span>
                       <Badge className={`${
@@ -109,15 +145,17 @@ export default function RiskMapView({ assets, onAssetSelect, selectedRisk = 'all
                         {riskScore}%
                       </Badge>
                     </div>
+
                     {asset.population_served && (
                       <p className="text-slate-500">
-                        Population served: {asset.population_served.toLocaleString()}
+                        Population served: {Number(asset.population_served).toLocaleString()}
                       </p>
                     )}
                   </div>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
+
+                  <Button
+                    size="sm"
+                    variant="outline"
                     className="w-full mt-3"
                     onClick={() => onAssetSelect?.(asset)}
                   >
