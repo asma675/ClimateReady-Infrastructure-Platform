@@ -14,14 +14,20 @@ import CreateProjectModal from '../components/modals/CreateProjectModal';
 
 export default function RiskMap() {
   const [selectedRisk, setSelectedRisk] = useState('all');
-  const [selectedTimeHorizon, setSelectedTimeHorizon] = useState('immediate');
+  const [selectedTimeHorizon, setSelectedTimeHorizon] = useState('current');
+
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const { data: assets = [], refetch } = useQuery({
+  const { data: assets = [] } = useQuery({
     queryKey: ['assets', selectedTimeHorizon],
-    queryFn: () => govData.entities.InfrastructureAsset.filter({ time_horizon: selectedTimeHorizon }, '-overall_risk_score', 200),
+    queryFn: () =>
+      govData.entities.InfrastructureAsset.filter(
+        { time_horizon: selectedTimeHorizon },
+        '-overall_risk_score',
+        200
+      ),
   });
 
   const { refetch: refetchProjects } = useQuery({
@@ -29,7 +35,7 @@ export default function RiskMap() {
     queryFn: () => govData.entities.InvestmentProject.list(),
   });
 
-  const filteredAssets = assets.filter(a => {
+  const filteredAssets = assets.filter((a) => {
     if (selectedRisk === 'all') return true;
     const riskValue = a.climate_risks?.[`${selectedRisk}_risk`] || 0;
     return riskValue > 0;
@@ -44,6 +50,7 @@ export default function RiskMap() {
   return (
     <div className={`min-h-screen bg-slate-50 ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
       <div className={`${isFullscreen ? 'h-full' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6'}`}>
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -65,8 +72,9 @@ export default function RiskMap() {
               </p>
             </div>
           </div>
-          <Button 
-            variant="outline" 
+
+          <Button
+            variant="outline"
             onClick={() => setIsFullscreen(!isFullscreen)}
             className={`gap-2 ${isFullscreen ? 'bg-white' : ''}`}
           >
@@ -141,7 +149,7 @@ export default function RiskMap() {
         open={!!selectedAsset}
         onClose={() => setSelectedAsset(null)}
         onCreateProject={(asset) => {
-          setSelectedAsset(null);
+          setSelectedAsset(asset);
           setShowCreateProject(true);
         }}
       />
