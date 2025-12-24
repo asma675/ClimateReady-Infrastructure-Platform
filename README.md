@@ -215,15 +215,6 @@ Project name, branding, and visual identity may not be reused without permission
 
 ---
 
-### ✨ Why this works
-
-* Sounds **professional**, not defensive
-* Acceptable to **IBM / Google / Government** reviewers
-* Clarifies intent without legal overreach
-* Complements an MIT or Apache license perfectly
-
----
-
 ## 🌱 Why ClimateReady?
 
 ClimateReady is designed to bridge the gap between **climate science, infrastructure data, and actionable decision-making** — empowering organizations to prepare for climate impacts **before emergencies occur**.
